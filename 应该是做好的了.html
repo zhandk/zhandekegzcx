@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>员工工资查询系统</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            width: 95%;
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+        }
+        
+        header {
+            background: #2c3e50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+        
+        .description {
+            font-size: 1rem;
+            opacity: 0.8;
+        }
+        
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+        
+        @media (min-width: 992px) {
+            .main-content {
+                flex-direction: row;
+            }
+        }
+        
+        .left-panel {
+            flex: 1;
+            padding: 20px;
+            max-width: 400px;
+        }
+        
+        .right-panel {
+            flex: 2;
+            padding: 20px;
+            border-left: 1px solid #eee;
+            overflow-x: auto;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        input[type="text"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        input[type="text"]:focus {
+            border-color: #3498db;
+            outline: none;
+        }
+        
+        .file-upload {
+            margin: 25px 0;
+            position: relative;
+        }
+        
+        .file-upload-input {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+        
+        .file-upload-label {
+            display: block;
+            padding: 15px;
+            background: #ecf0f1;
+            border: 2px dashed #bdc3c7;
+            border-radius: 8px;
+            text-align: center;
+            color: #7f8c8d;
+            transition: all 0.3s;
+        }
+        
+        .file-upload-label:hover {
+            background: #dfe6e9;
+            border-color: #3498db;
+        }
+        
+        button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            width: 100%;
+            transition: background 0.3s;
+            margin: 10px 0;
+        }
+        
+        button:hover {
+            background: #2980b9;
+        }
+        
+        .btn-generate {
+            background: #9b59b6;
+        }
+        
+        .btn-generate:hover {
+            background: #8e44ad;
+        }
+        
+        .result-area {
+            margin-top: 30px;
+        }
+        
+        .result-card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-top: 20px;
+            overflow-x: auto;
+        }
+        
+        .employee-info {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: #3498db;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 2rem;
+            margin-right: 20px;
+        }
+        
+        .employee-details {
+            flex: 1;
+        }
+        
+        .employee-name {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .employee-id {
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+        
+        .salary-table-container {
+            margin-top: 20px;
+            overflow-x: auto;
+            max-width: 100%;
+        }
+        
+        .salary-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            min-width: 1200px;
+        }
+        
+        .salary-table th, .salary-table td {
+            padding: 10px 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+            font-size: 14px;
+            white-space: nowrap;
+        }
+        
+        .salary-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #2c3e50;
+            position: sticky;
+            top: 0;
+        }
+        
+        .salary-table tr:hover {
+            background-color: #f1f8ff;
+        }
+        
+        .highlighted-row {
+            background-color: #e3f2fd !important;
+            font-weight: 600;
+        }
+        
+        .previous-row {
+            background-color: #f5f5f5 !important;
+            font-style: italic;
+        }
+        
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #7f8c8d;
+        }
+        
+        .no-data i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .instructions {
+            background: #e8f4fc;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-size: 0.9rem;
+            color: #2c3e50;
+        }
+        
+        .instructions h3 {
+            margin-bottom: 10px;
+        }
+        
+        .instructions ol {
+            padding-left: 20px;
+        }
+        
+        .instructions li {
+            margin-bottom: 8px;
+        }
+        
+        .data-info {
+            background: #e8f8f5;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: #2c3e50;
+            text-align: center;
+        }
+        
+        .progress-bar {
+            height: 20px;
+            background: #f0f0f0;
+            border-radius: 10px;
+            margin: 15px 0;
+            overflow: hidden;
+        }
+        
+        .progress {
+            height: 100%;
+            background: #3498db;
+            border-radius: 10px;
+            width: 0%;
+            transition: width 0.5s;
+        }
+        
+        .import-status {
+            text-align: center;
+            margin: 10px 0;
+            font-weight: 500;
+        }
+        
+        .success {
+            color: #27ae60;
+        }
+        
+        .error {
+            color: #e74c3c;
+        }
+        
+        .search-container {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .search-container input {
+            flex: 1;
+        }
+        
+        .search-container button {
+            width: auto;
+        }
+        
+        .table-caption {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #2c3e50;
+            font-size: 1.1rem;
+        }
+        
+        .id-format {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+        
+        .note {
+            background: #fff3cd;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: #856404;
+            text-align: center;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            border-top: 1px solid #eee;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>员工工资查询系统</h1>
+            <p class="description">输入工号查询，显示工号所在行及上一行内容</p>
+        </header>
+        
+        <div class="main-content">
+            <div class="left-panel">
+                <div class="input-group">
+                    <label for="employee-id">输入工号查询</label>
+                    <div class="search-container">
+                        <input type="text" id="employee-id" placeholder="请输入员工工号 (如: L09553)">
+                        <button id="search-btn">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                    <div class="id-format">工号格式: 大写字母L + 5位数字 (如: L09553)</div>
+                </div>
+                
+                <div class="file-upload">
+                    <label class="file-upload-label">
+                        <i class="fas fa-file-excel"></i>
+                        <p>点击或拖拽Excel文件导入工资表</p>
+                        <p class="import-status">支持中老双语工资表格式</p>
+                        <input type="file" id="file-upload-input" class="file-upload-input" accept=".xlsx, .xls">
+                    </label>
+                </div>
+                
+                <div class="progress-bar hidden" id="progress-bar">
+                    <div class="progress" id="progress"></div>
+                </div>
+                
+                <p class="import-status hidden" id="import-status">准备导入数据...</p>
+                
+                <button id="generate-data" class="btn-generate">
+                    <i class="fas fa-plus-circle"></i> 生成示例数据
+                </button>
+                
+                <div class="data-info">
+                    当前系统中有 <span id="data-count">0</span> 条员工工资记录
+                </div>
+                
+                <div class="note">
+                    注意: 系统支持中老双语Excel格式，自动识别工号列
+                </div>
+                
+                <div class="instructions">
+                    <h3>使用说明</h3>
+                    <ol>
+                        <li>在输入框中输入员工工号并点击查询按钮</li>
+                        <li>工号格式: 大写字母L + 5位数字 (如: L09553)</li>
+                        <li>导入Excel格式的工资表文件(支持中老双语)</li>
+                        <li>系统将显示工号所在行及上一行的完整内容</li>
+                        <li>查询结果将显示在右侧区域</li>
+                    </ol>
+                </div>
+            </div>
+            
+            <div class="right-panel">
+                <h2>查询结果</h2>
+                <div id="result-area" class="result-area">
+                    <div class="no-data" id="no-data">
+                        <i class="fas fa-file-alt"></i>
+                        <p>暂无查询数据，请输入工号查询或导入Excel文件</p>
+                    </div>
+                    
+                    <div class="result-card hidden" id="result-card">
+                        <div class="employee-info">
+                            <div class="avatar">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div class="employee-details">
+                                <div class="employee-name" id="employee-name">员工姓名</div>
+                                <div class="employee-id">工号: <span id="employee-id-text">----</span></div>
+                            </div>
+                        </div>
+                        
+                        <div class="table-caption">工资明细（显示工号行及上一行内容）</div>
+                        <div class="salary-table-container">
+                            <table class="salary-table" id="salary-table">
+                                <thead>
+                                    <tr id="table-header">
+                                        <!-- 表头将由JavaScript动态生成 -->
+                                    </tr>
+                                </thead>
+                                <tbody id="table-body">
+                                    <!-- 数据行将由JavaScript动态生成 -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>员工工资查询系统 &copy; 2023 - 所有数据仅在浏览器中处理，不会上传到服务器</p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const employeeIdInput = document.getElementById('employee-id');
+            const searchBtn = document.getElementById('search-btn');
+            const fileUploadInput = document.getElementById('file-upload-input');
+            const noData = document.getElementById('no-data');
+            const resultCard = document.getElementById('result-card');
+            const generateDataBtn = document.getElementById('generate-data');
+            const dataCountElement = document.getElementById('data-count');
+            const progressBar = document.getElementById('progress-bar');
+            const progress = document.getElementById('progress');
+            const importStatus = document.getElementById('import-status');
+            const tableBody = document.getElementById('table-body');
+            const tableHeader = document.getElementById('table-header');
+            
+            // 存储原始Excel数据
+            let excelData = [];
+            let headers = [];
+            let employeeIdColumnIndex = -1;
+            
+            // 初始化示例数据
+            function initSampleData() {
+                // 清空现有数据
+                excelData = [];
+                
+                // 添加表头 (根据您提供的格式)
+                headers = [
+                    '员工编号ເລກບັດ', 
+                    '姓名 ຊື່', 
+                    '岗位ຕຳແໜ່ງ', 
+                    '入职日期ວັນທີເຂົ້າວຽກ', 
+                    '出勤天数ວັນງານ', 
+                    '加班OTຊົ່ວໂມງ', 
+                    '司龄ປີການ', 
+                    '基本工资ເງິນເດືອນພື້ນຖານ', 
+                    '日常加班工资ເງິນOTມື້', 
+                    '加班工资ເງິນOTຊົ່ວໂມງ', 
+                    '司龄津贴ເງິນປີການ', 
+                    '汇率津贴ອຸດໜູນເງິນເຟີ້', 
+                    '学历津贴ເງິນໃບປະກາດ', 
+                    '拉矿津贴ເງິນຖ້ຽວ', 
+                    '稳产津贴ເງິນຜະລິດ', 
+                    '进尺工资ເງິນເຈາະ', 
+                    '出勤补助ເງິນຂະຫຍັນ', 
+                    '其他收入ເງິນອຸດໜູນອື່ນໆ', 
+                    '代扣款项ເງິນປັບໄໝ', 
+                    '应发工资ເງິນກ່ອນຫັກອາກອນ', 
+                    '个人所得税ຫັກອາກອນລາຍໄດ້', 
+                    '实发工资ເງິນໄດ້ຮັບຕົວຈິງ', 
+                    '旷工天数(X)'
+                ];
+                
+                // 添加示例数据
+                excelData.push(headers);
+                excelData.push(['L09553', '叶倩', '综合办事员', '2023/10/7', 30, 32, 1.9, 5980000, 1380000, 1380000, 290323, 483871, 967742, 0, 0, 0, 800000, 967742, 0, 12249678, 909968, 11339710, 0]);
+                excelData.push(['L09554', '张三', '技术员', '2023/9/1', 28, 28, 2.1, 6200000, 1450000, 1450000, 310000, 500000, 1000000, 500000, 300000, 0, 850000, 1000000, 0, 13000000, 950000, 12050000, 0]);
+                
+                // 设置工号列索引
+                employeeIdColumnIndex = 0;
+                
+                dataCountElement.textContent = excelData.length - 1; // 减去表头行
+                
+                // 保存到本地存储
+                localStorage.setItem('excelData', JSON.stringify(excelData));
+                localStorage.setItem('headers', JSON.stringify(headers));
+                localStorage.setItem('employeeIdColumnIndex', employeeIdColumnIndex.toString());
+                
+                alert('已初始化示例数据！包含中老双语格式。');
+            }
+            
+            // 从本地存储加载数据
+            function loadFromLocalStorage() {
+                const storedData = localStorage.getItem('excelData');
+                const storedHeaders = localStorage.getItem('headers');
+                const storedEmployeeIdColumnIndex = localStorage.getItem('employeeIdColumnIndex');
+                
+                if (storedData && storedHeaders) {
+                    excelData = JSON.parse(storedData);
+                    headers = JSON.parse(storedHeaders);
+                    employeeIdColumnIndex = parseInt(storedEmployeeIdColumnIndex) || 0;
+                    dataCountElement.textContent = excelData.length - 1; // 减去表头行
+                }
+            }
+            
+            // 验证工号格式
+            function isValidEmployeeId(id) {
+                // 工号格式: 大写字母L + 5位数字
+                const pattern = /^L\d{5}$/;
+                return pattern.test(id);
+            }
+            
+            // 查找工号列索引
+            function findEmployeeIdColumn(headers) {
+                // 可能的工号列名称
+                const possibleNames = [
+                    '员工编号', 'ເລກບັດ', '员工编号ເລກບັດ',
+                    '工号', '编号', 'ID', '员工ID', '员工号'
+                ];
+                
+                for (let i = 0; i < headers.length; i++) {
+                    const header = String(headers[i]).toLowerCase();
+                    
+                    for (const name of possibleNames) {
+                        if (header.includes(name.toLowerCase())) {
+                            return i;
+                        }
+                    }
+                    
+                    // 检查是否包含L开头的数据
+                    if (excelData.length > 1) {
+                        for (let j = 1; j < Math.min(5, excelData.length); j++) {
+                            const cellValue = String(excelData[j][i] || '');
+                            if (cellValue.match(/^L\d{5}$/)) {
+                                return i;
+                            }
+                        }
+                    }
+                }
+                
+                // 默认返回第一列
+                return 0;
+            }
+            
+            // 查询按钮点击事件
+            searchBtn.addEventListener('click', function() {
+                const id = employeeIdInput.value.trim();
+                
+                // 验证工号格式
+                if (!id) {
+                    alert('请输入工号');
+                    return;
+                }
+                
+                if (!isValidEmployeeId(id)) {
+                    alert('工号格式不正确！请使用大写字母L开头加5位数字的格式，例如：L09553');
+                    return;
+                }
+                
+                searchEmployee(id);
+            });
+            
+            // 文件上传事件
+            fileUploadInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                // 显示进度条
+                progressBar.classList.remove('hidden');
+                importStatus.classList.remove('hidden');
+                importStatus.textContent = "开始处理Excel文件...";
+                progress.style.width = "5%";
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const data = new Uint8Array(e.target.result);
+                        importStatus.textContent = "正在解析Excel数据...";
+                        progress.style.width = "20%";
+                        
+                        // 使用setTimeout让UI有机会更新
+                        setTimeout(() => {
+                            const workbook = XLSX.read(data, { type: 'array' });
+                            
+                            // 获取第一个工作表
+                            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                            importStatus.textContent = "转换数据格式...";
+                            progress.style.width = "40%";
+                            
+                            setTimeout(() => {
+                                // 将工作表转换为二维数组
+                                const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+                                
+                                if (jsonData.length > 0) {
+                                    importStatus.textContent = `正在处理${jsonData.length}行数据...`;
+                                    progress.style.width = "60%";
+                                    
+                                    // 使用setTimeout避免UI冻结
+                                    setTimeout(() => {
+                                        processExcelData(jsonData);
+                                    }, 100);
+                                } else {
+                                    importStatus.textContent = "Excel文件中没有找到数据";
+                                    importStatus.className = "import-status error";
+                                    progressBar.classList.add('hidden');
+                                }
+                            }, 100);
+                        }, 100);
+                    } catch (error) {
+                        console.error("处理Excel文件时出错:", error);
+                        importStatus.textContent = "处理文件时出错: " + error.message;
+                        importStatus.className = "import-status error";
+                        progressBar.classList.add('hidden');
+                    }
+                };
+                
+                reader.onerror = function() {
+                    importStatus.textContent = "读取文件时出错";
+                    importStatus.className = "import-status error";
+                    progressBar.classList.add('hidden');
+                };
+                
+                reader.readAsArrayBuffer(file);
+            });
+            
+            // 处理Excel数据
+            function processExcelData(data) {
+                excelData = data;
+                
+                // 提取表头
+                if (data.length > 0) {
+                    headers = data[0];
+                    
+                    // 查找工号列
+                    employeeIdColumnIndex = findEmployeeIdColumn(headers);
+                    console.log("工号列索引:", employeeIdColumnIndex, "列名:", headers[employeeIdColumnIndex]);
+                }
+                
+                // 保存到本地存储
+                localStorage.setItem('excelData', JSON.stringify(excelData));
+                localStorage.setItem('headers', JSON.stringify(headers));
+                localStorage.setItem('employeeIdColumnIndex', employeeIdColumnIndex.toString());
+                
+                importStatus.textContent = `成功导入${data.length}行数据`;
+                importStatus.className = "import-status success";
+                progress.style.width = "100%";
+                
+                setTimeout(() => {
+                    progressBar.classList.add('hidden');
+                    importStatus.classList.add('hidden');
+                }, 2000);
+                
+                dataCountElement.textContent = excelData.length - 1; // 减去表头行
+                
+                alert(`成功导入${data.length}行数据，已识别工号列: ${headers[employeeIdColumnIndex]}`);
+            }
+            
+            // 生成示例数据
+            generateDataBtn.addEventListener('click', function() {
+                initSampleData();
+            });
+            
+            // 搜索员工函数
+            function searchEmployee(id) {
+                if (excelData.length === 0) {
+                    alert('请先导入Excel数据');
+                    return;
+                }
+                
+                // 查找工号所在的行
+                let targetRowIndex = -1;
+                for (let i = 1; i < excelData.length; i++) {
+                    // 获取工号列的值
+                    const employeeId = String(excelData[i][employeeIdColumnIndex] || '');
+                    
+                    // 标准化工号格式进行比较
+                    if (employeeId.toUpperCase() === id.toUpperCase()) {
+                        targetRowIndex = i;
+                        break;
+                    }
+                }
+                
+                if (targetRowIndex === -1) {
+                    alert('未找到该工号对应的员工信息');
+                    return;
+                }
+                
+                // 显示员工信息
+                const employeeData = excelData[targetRowIndex];
+                const nameColumnIndex = employeeIdColumnIndex + 1 < headers.length ? employeeIdColumnIndex + 1 : employeeIdColumnIndex;
+                document.getElementById('employee-name').textContent = employeeData[nameColumnIndex] || '未知';
+                document.getElementById('employee-id-text').textContent = employeeData[employeeIdColumnIndex] || '未知';
+                
+                // 显示表格数据（工号所在行及上一行）
+                displayTableData(targetRowIndex);
+                
+                // 显示结果卡片，隐藏无数据提示
+                noData.classList.add('hidden');
+                resultCard.classList.remove('hidden');
+            }
+            
+            // 显示表格数据
+            function displayTableData(targetRowIndex) {
+                // 清空表格
+                tableBody.innerHTML = '';
+                tableHeader.innerHTML = '';
+                
+                // 更新表头
+                for (let i = 0; i < headers.length; i++) {
+                    const th = document.createElement('th');
+                    th.textContent = headers[i];
+                    tableHeader.appendChild(th);
+                }
+                
+                // 添加工号所在行的上一行（如果存在）
+                if (targetRowIndex > 1) {
+                    const prevRow = excelData[targetRowIndex - 1];
+                    const prevRowElement = createTableRow(prevRow, 'previous-row');
+                    tableBody.appendChild(prevRowElement);
+                }
+                
+                // 添加工号所在行
+                const targetRow = excelData[targetRowIndex];
+                const targetRowElement = createTableRow(targetRow, 'highlighted-row');
+                tableBody.appendChild(targetRowElement);
+            }
+            
+            // 创建表格行
+            function createTableRow(rowData, rowClass) {
+                const row = document.createElement('tr');
+                if (rowClass) {
+                    row.className = rowClass;
+                }
+                
+                for (let i = 0; i < headers.length; i++) {
+                    const cell = document.createElement('td');
+                    
+                    // 格式化数字
+                    if (typeof rowData[i] === 'number') {
+                        cell.textContent = formatNumber(rowData[i]);
+                    } else {
+                        cell.textContent = rowData[i] || '';
+                    }
+                    
+                    row.appendChild(cell);
+                }
+                
+                return row;
+            }
+            
+            // 数字格式化函数
+            function formatNumber(num) {
+                if (typeof num !== 'number') return num || '';
+                return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            }
+            
+            // 拖放功能
+            const fileUploadLabel = document.querySelector('.file-upload-label');
+            
+            fileUploadLabel.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                this.style.background = '#dfe6e9';
+                this.style.borderColor = '#3498db';
+            });
+            
+            fileUploadLabel.addEventListener('dragleave', function() {
+                this.style.background = '#ecf0f1';
+                this.style.borderColor = '#bdc3c7';
+            });
+            
+            fileUploadLabel.addEventListener('drop', function(e) {
+                e.preventDefault();
+                this.style.background = '#ecf0f1';
+                this.style.borderColor = '#bdc3c7';
+                
+                if (e.dataTransfer.files.length) {
+                    fileUploadInput.files = e.dataTransfer.files;
+                    const event = new Event('change');
+                    fileUploadInput.dispatchEvent(event);
+                }
+            });
+            
+            // 初始化
+            loadFromLocalStorage();
+        });
+    </script>
+</body>
+</html>
