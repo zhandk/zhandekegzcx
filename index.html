@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>员工工资查询系统</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -22,7 +21,7 @@
         
         .container {
             width: 95%;
-            max-width: 1400px;
+            max-width: 1200px;
             margin: 0 auto;
             background: white;
             border-radius: 15px;
@@ -35,6 +34,7 @@
             color: white;
             padding: 20px;
             text-align: center;
+            position: relative;
         }
         
         h1 {
@@ -47,10 +47,52 @@
             opacity: 0.8;
         }
         
+        .admin-login-btn {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .tab {
+            padding: 15px 25px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #6c757d;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+        
+        .tab.active {
+            color: #3498db;
+            border-bottom: 3px solid #3498db;
+            background: white;
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 20px;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
         .main-content {
             display: flex;
             flex-direction: column;
-            padding: 20px;
         }
         
         @media (min-width: 992px) {
@@ -83,7 +125,7 @@
             color: #2c3e50;
         }
         
-        input[type="text"] {
+        input[type="text"], input[type="password"] {
             width: 100%;
             padding: 12px 15px;
             border: 2px solid #ddd;
@@ -92,40 +134,9 @@
             transition: border-color 0.3s;
         }
         
-        input[type="text"]:focus {
+        input[type="text"]:focus, input[type="password"]:focus {
             border-color: #3498db;
             outline: none;
-        }
-        
-        .file-upload {
-            margin: 25px 0;
-            position: relative;
-        }
-        
-        .file-upload-input {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            opacity: 0;
-            cursor: pointer;
-        }
-        
-        .file-upload-label {
-            display: block;
-            padding: 15px;
-            background: #ecf0f1;
-            border: 2px dashed #bdc3c7;
-            border-radius: 8px;
-            text-align: center;
-            color: #7f8c8d;
-            transition: all 0.3s;
-        }
-        
-        .file-upload-label:hover {
-            background: #dfe6e9;
-            border-color: #3498db;
         }
         
         button {
@@ -146,12 +157,28 @@
             background: #2980b9;
         }
         
-        .btn-generate {
+        .btn-admin {
             background: #9b59b6;
         }
         
-        .btn-generate:hover {
+        .btn-admin:hover {
             background: #8e44ad;
+        }
+        
+        .btn-danger {
+            background: #e74c3c;
+        }
+        
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+        
+        .btn-success {
+            background: #27ae60;
+        }
+        
+        .btn-success:hover {
+            background: #219653;
         }
         
         .result-area {
@@ -211,7 +238,7 @@
             width: 100%;
             border-collapse: collapse;
             margin: 15px 0;
-            min-width: 1200px;
+            min-width: 800px;
         }
         
         .salary-table th, .salary-table td {
@@ -219,7 +246,6 @@
             text-align: left;
             border-bottom: 1px solid #ddd;
             font-size: 14px;
-            white-space: nowrap;
         }
         
         .salary-table th {
@@ -237,11 +263,6 @@
         .highlighted-row {
             background-color: #e3f2fd !important;
             font-weight: 600;
-        }
-        
-        .previous-row {
-            background-color: #f5f5f5 !important;
-            font-style: italic;
         }
         
         .no-data {
@@ -290,70 +311,23 @@
             text-align: center;
         }
         
-        .progress-bar {
-            height: 20px;
-            background: #f0f0f0;
+        .admin-form {
+            background: #f8f9fa;
+            padding: 20px;
             border-radius: 10px;
-            margin: 15px 0;
-            overflow: hidden;
+            margin-bottom: 20px;
         }
         
-        .progress {
-            height: 100%;
-            background: #3498db;
-            border-radius: 10px;
-            width: 0%;
-            transition: width 0.5s;
-        }
-        
-        .import-status {
-            text-align: center;
-            margin: 10px 0;
-            font-weight: 500;
-        }
-        
-        .success {
-            color: #27ae60;
-        }
-        
-        .error {
-            color: #e74c3c;
-        }
-        
-        .search-container {
+        .form-row {
             display: flex;
-            gap: 10px;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 15px;
         }
         
-        .search-container input {
+        .form-group {
             flex: 1;
-        }
-        
-        .search-container button {
-            width: auto;
-        }
-        
-        .table-caption {
-            font-weight: 600;
-            margin-bottom: 10px;
-            color: #2c3e50;
-            font-size: 1.1rem;
-        }
-        
-        .id-format {
-            font-size: 0.9rem;
-            color: #7f8c8d;
-            margin-top: 5px;
-        }
-        
-        .note {
-            background: #fff3cd;
-            padding: 10px 15px;
-            border-radius: 8px;
-            margin-top: 15px;
-            font-size: 0.9rem;
-            color: #856404;
-            text-align: center;
+            min-width: 200px;
         }
         
         .footer {
@@ -363,101 +337,222 @@
             font-size: 0.9rem;
             border-top: 1px solid #eee;
         }
+        
+        .login-container {
+            max-width: 400px;
+            margin: 50px auto;
+            padding: 30px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .notification {
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+            text-align: center;
+        }
+        
+        .success {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            gap: 10px;
+        }
+        
+        .pagination button {
+            width: auto;
+            padding: 8px 15px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
             <h1>员工工资查询系统</h1>
-            <p class="description">输入工号查询，显示工号所在行及上一行内容</p>
+            <p class="description">请输入工号查询您的工资信息</p>
+            <button class="admin-login-btn" id="admin-login-btn">管理员登录</button>
         </header>
         
-        <div class="main-content">
-            <div class="left-panel">
-                <div class="input-group">
-                    <label for="employee-id">输入工号查询</label>
-                    <div class="search-container">
-                        <input type="text" id="employee-id" placeholder="请输入员工工号 (如: L09553)">
-                        <button id="search-btn">
-                            <i class="fas fa-search"></i>
-                        </button>
-                    </div>
-                    <div class="id-format">工号格式: 大写字母L + 5位数字 (如: L09553)</div>
-                </div>
-                
-                <div class="file-upload">
-                    <label class="file-upload-label">
-                        <i class="fas fa-file-excel"></i>
-                        <p>点击或拖拽Excel文件导入工资表</p>
-                        <p class="import-status">支持中老双语工资表格式</p>
-                        <input type="file" id="file-upload-input" class="file-upload-input" accept=".xlsx, .xls">
-                    </label>
-                </div>
-                
-                <div class="progress-bar hidden" id="progress-bar">
-                    <div class="progress" id="progress"></div>
-                </div>
-                
-                <p class="import-status hidden" id="import-status">准备导入数据...</p>
-                
-                <button id="generate-data" class="btn-generate">
-                    <i class="fas fa-plus-circle"></i> 生成示例数据
-                </button>
-                
-                <div class="data-info">
-                    当前系统中有 <span id="data-count">0</span> 条员工工资记录
-                </div>
-                
-                <div class="note">
-                    注意: 系统支持中老双语Excel格式，自动识别工号列
-                </div>
-                
-                <div class="instructions">
-                    <h3>使用说明</h3>
-                    <ol>
-                        <li>在输入框中输入员工工号并点击查询按钮</li>
-                        <li>工号格式: 大写字母L + 5位数字 (如: L09553)</li>
-                        <li>导入Excel格式的工资表文件(支持中老双语)</li>
-                        <li>系统将显示工号所在行及上一行的完整内容</li>
-                        <li>查询结果将显示在右侧区域</li>
-                    </ol>
-                </div>
-            </div>
-            
-            <div class="right-panel">
-                <h2>查询结果</h2>
-                <div id="result-area" class="result-area">
-                    <div class="no-data" id="no-data">
-                        <i class="fas fa-file-alt"></i>
-                        <p>暂无查询数据，请输入工号查询或导入Excel文件</p>
+        <div class="tabs">
+            <div class="tab active" data-tab="query">工资查询</div>
+            <div class="tab hidden" data-tab="admin">管理员后台</div>
+        </div>
+        
+        <div class="tab-content active" id="query-tab">
+            <div class="main-content">
+                <div class="left-panel">
+                    <div class="input-group">
+                        <label for="employee-id">输入工号查询</label>
+                        <div class="search-container">
+                            <input type="text" id="employee-id" placeholder="请输入员工工号 (如: L09553)">
+                            <button id="search-btn">
+                                <i class="fas fa-search"></i> 查询工资
+                            </button>
+                        </div>
+                        <div class="id-format">工号格式: 大写字母L + 5位数字 (如: L09553)</div>
                     </div>
                     
-                    <div class="result-card hidden" id="result-card">
-                        <div class="employee-info">
-                            <div class="avatar">
-                                <i class="fas fa-user"></i>
-                            </div>
-                            <div class="employee-details">
-                                <div class="employee-name" id="employee-name">员工姓名</div>
-                                <div class="employee-id">工号: <span id="employee-id-text">----</span></div>
-                            </div>
+                    <div class="data-info">
+                        系统中共有 <span id="data-count">0</span> 条员工工资记录
+                    </div>
+                    
+                    <div class="instructions">
+                        <h3>使用说明</h3>
+                        <ol>
+                            <li>在输入框中输入您的员工工号</li>
+                            <li>点击查询按钮查看工资明细</li>
+                            <li>工号格式: 大写字母L + 5位数字 (如: L09553)</li>
+                            <li>如有问题，请联系人力资源部门</li>
+                        </ol>
+                    </div>
+                </div>
+                
+                <div class="right-panel">
+                    <h2>查询结果</h2>
+                    <div id="result-area" class="result-area">
+                        <div class="no-data" id="no-data">
+                            <i class="fas fa-file-alt"></i>
+                            <p>暂无查询数据，请输入工号查询</p>
                         </div>
                         
-                        <div class="table-caption">工资明细（显示工号行及上一行内容）</div>
-                        <div class="salary-table-container">
-                            <table class="salary-table" id="salary-table">
-                                <thead>
-                                    <tr id="table-header">
-                                        <!-- 表头将由JavaScript动态生成 -->
-                                    </tr>
-                                </thead>
-                                <tbody id="table-body">
-                                    <!-- 数据行将由JavaScript动态生成 -->
-                                </tbody>
-                            </table>
+                        <div class="result-card hidden" id="result-card">
+                            <div class="employee-info">
+                                <div class="avatar">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <div class="employee-details">
+                                    <div class="employee-name" id="employee-name">员工姓名</div>
+                                    <div class="employee-id">工号: <span id="employee-id-text">----</span></div>
+                                </div>
+                            </div>
+                            
+                            <div class="table-caption">工资明细</div>
+                            <div class="salary-table-container">
+                                <table class="salary-table" id="salary-table">
+                                    <thead>
+                                        <tr>
+                                            <th>项目</th>
+                                            <th>金额</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="table-body">
+                                        <!-- 数据行将由JavaScript动态生成 -->
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+        
+        <div class="tab-content" id="admin-tab">
+            <h2>管理员后台</h2>
+            <div class="admin-actions">
+                <button id="add-employee-btn" class="btn-success">
+                    <i class="fas fa-plus-circle"></i> 添加员工工资记录
+                </button>
+                <button id="logout-btn" class="btn-danger">
+                    <i class="fas fa-sign-out-alt"></i> 退出管理员
+                </button>
+            </div>
+            
+            <div class="admin-form hidden" id="employee-form">
+                <h3>添加/编辑员工工资信息</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="admin-employee-id">工号</label>
+                        <input type="text" id="admin-employee-id" placeholder="如: L09553">
+                    </div>
+                    <div class="form-group">
+                        <label for="admin-employee-name">姓名</label>
+                        <input type="text" id="admin-employee-name" placeholder="员工姓名">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="admin-base-salary">基本工资</label>
+                        <input type="text" id="admin-base-salary" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="admin-performance">绩效工资</label>
+                        <input type="text" id="admin-performance" placeholder="0">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="admin-allowance">津贴</label>
+                        <input type="text" id="admin-allowance" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="admin-bonus">奖金</label>
+                        <input type="text" id="admin-bonus" placeholder="0">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="admin-deduction">扣款</label>
+                        <input type="text" id="admin-deduction" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="admin-total">实发工资</label>
+                        <input type="text" id="admin-total" placeholder="0" readonly>
+                    </div>
+                </div>
+                
+                <button id="save-employee-btn" class="btn-success">
+                    <i class="fas fa-save"></i> 保存记录
+                </button>
+                <button id="cancel-form-btn" class="btn-danger">
+                    <i class="fas fa-times"></i> 取消
+                </button>
+            </div>
+            
+            <div class="data-info">
+                系统中共有 <span id="admin-data-count">0</span> 条员工工资记录
+            </div>
+            
+            <h3>所有员工工资数据</h3>
+            <div class="salary-table-container">
+                <table class="salary-table" id="admin-salary-table">
+                    <thead>
+                        <tr>
+                            <th>工号</th>
+                            <th>姓名</th>
+                            <th>基本工资</th>
+                            <th>绩效工资</th>
+                            <th>津贴</th>
+                            <th>奖金</th>
+                            <th>扣款</th>
+                            <th>实发工资</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-table-body">
+                        <!-- 数据行将由JavaScript动态生成 -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="pagination">
+                <button id="admin-prev-page"><i class="fas fa-chevron-left"></i> 上一页</button>
+                <span id="admin-page-info">第 1 页</span>
+                <button id="admin-next-page">下一页 <i class="fas fa-chevron-right"></i></button>
             </div>
         </div>
         
@@ -466,128 +561,69 @@
         </div>
     </div>
 
+    <!-- 登录模态框 -->
+    <div class="login-container hidden" id="login-modal">
+        <h2>管理员登录</h2>
+        <div class="input-group">
+            <label for="admin-id">管理员工号</label>
+            <input type="text" id="admin-id" placeholder="请输入管理员工号">
+        </div>
+        <div class="input-group">
+            <label for="admin-password">密码</label>
+            <input type="password" id="admin-password" placeholder="请输入密码">
+        </div>
+        <button id="login-btn">登录</button>
+        <button id="cancel-login-btn" class="btn-danger">取消</button>
+    </div>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // DOM元素
             const employeeIdInput = document.getElementById('employee-id');
             const searchBtn = document.getElementById('search-btn');
-            const fileUploadInput = document.getElementById('file-upload-input');
             const noData = document.getElementById('no-data');
             const resultCard = document.getElementById('result-card');
-            const generateDataBtn = document.getElementById('generate-data');
             const dataCountElement = document.getElementById('data-count');
-            const progressBar = document.getElementById('progress-bar');
-            const progress = document.getElementById('progress');
-            const importStatus = document.getElementById('import-status');
+            const adminDataCountElement = document.getElementById('admin-data-count');
             const tableBody = document.getElementById('table-body');
-            const tableHeader = document.getElementById('table-header');
+            const adminTableBody = document.getElementById('admin-table-body');
+            const adminLoginBtn = document.getElementById('admin-login-btn');
+            const loginModal = document.getElementById('login-modal');
+            const loginBtn = document.getElementById('login-btn');
+            const cancelLoginBtn = document.getElementById('cancel-login-btn');
+            const logoutBtn = document.getElementById('logout-btn');
+            const addEmployeeBtn = document.getElementById('add-employee-btn');
+            const employeeForm = document.getElementById('employee-form');
+            const saveEmployeeBtn = document.getElementById('save-employee-btn');
+            const cancelFormBtn = document.getElementById('cancel-form-btn');
+            const adminTab = document.querySelector('[data-tab="admin"]');
+            const tabs = document.querySelectorAll('.tab');
+            const tabContents = document.querySelectorAll('.tab-content');
             
-            // 存储原始Excel数据
-            let excelData = [];
-            let headers = [];
-            let employeeIdColumnIndex = -1;
+            // 工资数据字段
+            const salaryFields = [
+                { id: 'admin-base-salary', name: '基本工资' },
+                { id: 'admin-performance', name: '绩效工资' },
+                { id: 'admin-allowance', name: '津贴' },
+                { id: 'admin-bonus', name: '奖金' },
+                { id: 'admin-deduction', name: '扣款' }
+            ];
             
-            // 初始化示例数据
-            function initSampleData() {
-                // 清空现有数据
-                excelData = [];
-                
-                // 添加表头 (根据您提供的格式)
-                headers = [
-                    '员工编号ເລກບັດ', 
-                    '姓名 ຊື່', 
-                    '岗位ຕຳແໜ່ງ', 
-                    '入职日期ວັນທີເຂົ້າວຽກ', 
-                    '出勤天数ວັນງານ', 
-                    '加班OTຊົ່ວໂມງ', 
-                    '司龄ປີການ', 
-                    '基本工资ເງິນເດືອນພື້ນຖານ', 
-                    '日常加班工资ເງິນOTມື້', 
-                    '加班工资ເງິນOTຊົ່ວໂມງ', 
-                    '司龄津贴ເງິນປີການ', 
-                    '汇率津贴ອຸດໜູນເງິນເຟີ້', 
-                    '学历津贴ເງິນໃບປະກາດ', 
-                    '拉矿津贴ເງິນຖ້ຽວ', 
-                    '稳产津贴ເງິນຜະລິດ', 
-                    '进尺工资ເງິນເຈາະ', 
-                    '出勤补助ເງິນຂະຫຍັນ', 
-                    '其他收入ເງິນອຸດໜູນອື່ນໆ', 
-                    '代扣款项ເງິນປັບໄໝ', 
-                    '应发工资ເງິນກ່ອນຫັກອາກອນ', 
-                    '个人所得税ຫັກອາກອນລາຍໄດ້', 
-                    '实发工资ເງິນໄດ້ຮັບຕົວຈິງ', 
-                    '旷工天数(X)'
-                ];
-                
-                // 添加示例数据
-                excelData.push(headers);
-                excelData.push(['L09553', '叶倩', '综合办事员', '2023/10/7', 30, 32, 1.9, 5980000, 1380000, 1380000, 290323, 483871, 967742, 0, 0, 0, 800000, 967742, 0, 12249678, 909968, 11339710, 0]);
-                excelData.push(['L09554', '张三', '技术员', '2023/9/1', 28, 28, 2.1, 6200000, 1450000, 1450000, 310000, 500000, 1000000, 500000, 300000, 0, 850000, 1000000, 0, 13000000, 950000, 12050000, 0]);
-                
-                // 设置工号列索引
-                employeeIdColumnIndex = 0;
-                
-                dataCountElement.textContent = excelData.length - 1; // 减去表头行
-                
-                // 保存到本地存储
-                localStorage.setItem('excelData', JSON.stringify(excelData));
-                localStorage.setItem('headers', JSON.stringify(headers));
-                localStorage.setItem('employeeIdColumnIndex', employeeIdColumnIndex.toString());
-                
-                alert('已初始化示例数据！包含中老双语格式。');
-            }
+            // 存储员工工资数据
+            let salaryData = [];
+            let currentPage = 1;
+            const rowsPerPage = 10;
+            let isEditMode = false;
+            let editEmployeeId = null;
             
-            // 从本地存储加载数据
-            function loadFromLocalStorage() {
-                const storedData = localStorage.getItem('excelData');
-                const storedHeaders = localStorage.getItem('headers');
-                const storedEmployeeIdColumnIndex = localStorage.getItem('employeeIdColumnIndex');
-                
-                if (storedData && storedHeaders) {
-                    excelData = JSON.parse(storedData);
-                    headers = JSON.parse(storedHeaders);
-                    employeeIdColumnIndex = parseInt(storedEmployeeIdColumnIndex) || 0;
-                    dataCountElement.textContent = excelData.length - 1; // 减去表头行
-                }
-            }
+            // 管理员账号（在实际应用中应该使用更安全的验证方式）
+            const adminAccounts = [
+                { id: 'L00001', password: 'admin123' },
+                { id: 'L00002', password: 'password' }
+            ];
             
-            // 验证工号格式
-            function isValidEmployeeId(id) {
-                // 工号格式: 大写字母L + 5位数字
-                const pattern = /^L\d{5}$/;
-                return pattern.test(id);
-            }
-            
-            // 查找工号列索引
-            function findEmployeeIdColumn(headers) {
-                // 可能的工号列名称
-                const possibleNames = [
-                    '员工编号', 'ເລກບັດ', '员工编号ເລກບັດ',
-                    '工号', '编号', 'ID', '员工ID', '员工号'
-                ];
-                
-                for (let i = 0; i < headers.length; i++) {
-                    const header = String(headers[i]).toLowerCase();
-                    
-                    for (const name of possibleNames) {
-                        if (header.includes(name.toLowerCase())) {
-                            return i;
-                        }
-                    }
-                    
-                    // 检查是否包含L开头的数据
-                    if (excelData.length > 1) {
-                        for (let j = 1; j < Math.min(5, excelData.length); j++) {
-                            const cellValue = String(excelData[j][i] || '');
-                            if (cellValue.match(/^L\d{5}$/)) {
-                                return i;
-                            }
-                        }
-                    }
-                }
-                
-                // 默认返回第一列
-                return 0;
-            }
+            // 初始化
+            loadFromLocalStorage();
             
             // 查询按钮点击事件
             searchBtn.addEventListener('click', function() {
@@ -607,228 +643,371 @@
                 searchEmployee(id);
             });
             
-            // 文件上传事件
-            fileUploadInput.addEventListener('change', function(e) {
-                const file = e.target.files[0];
-                if (!file) return;
-                
-                // 显示进度条
-                progressBar.classList.remove('hidden');
-                importStatus.classList.remove('hidden');
-                importStatus.textContent = "开始处理Excel文件...";
-                progress.style.width = "5%";
-                
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    try {
-                        const data = new Uint8Array(e.target.result);
-                        importStatus.textContent = "正在解析Excel数据...";
-                        progress.style.width = "20%";
-                        
-                        // 使用setTimeout让UI有机会更新
-                        setTimeout(() => {
-                            const workbook = XLSX.read(data, { type: 'array' });
-                            
-                            // 获取第一个工作表
-                            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                            importStatus.textContent = "转换数据格式...";
-                            progress.style.width = "40%";
-                            
-                            setTimeout(() => {
-                                // 将工作表转换为二维数组
-                                const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
-                                
-                                if (jsonData.length > 0) {
-                                    importStatus.textContent = `正在处理${jsonData.length}行数据...`;
-                                    progress.style.width = "60%";
-                                    
-                                    // 使用setTimeout避免UI冻结
-                                    setTimeout(() => {
-                                        processExcelData(jsonData);
-                                    }, 100);
-                                } else {
-                                    importStatus.textContent = "Excel文件中没有找到数据";
-                                    importStatus.className = "import-status error";
-                                    progressBar.classList.add('hidden');
-                                }
-                            }, 100);
-                        }, 100);
-                    } catch (error) {
-                        console.error("处理Excel文件时出错:", error);
-                        importStatus.textContent = "处理文件时出错: " + error.message;
-                        importStatus.className = "import-status error";
-                        progressBar.classList.add('hidden');
-                    }
-                };
-                
-                reader.onerror = function() {
-                    importStatus.textContent = "读取文件时出错";
-                    importStatus.className = "import-status error";
-                    progressBar.classList.add('hidden');
-                };
-                
-                reader.readAsArrayBuffer(file);
+            // 管理员登录按钮点击事件
+            adminLoginBtn.addEventListener('click', function() {
+                loginModal.classList.remove('hidden');
             });
             
-            // 处理Excel数据
-            function processExcelData(data) {
-                excelData = data;
-                
-                // 提取表头
-                if (data.length > 0) {
-                    headers = data[0];
-                    
-                    // 查找工号列
-                    employeeIdColumnIndex = findEmployeeIdColumn(headers);
-                    console.log("工号列索引:", employeeIdColumnIndex, "列名:", headers[employeeIdColumnIndex]);
-                }
-                
-                // 保存到本地存储
-                localStorage.setItem('excelData', JSON.stringify(excelData));
-                localStorage.setItem('headers', JSON.stringify(headers));
-                localStorage.setItem('employeeIdColumnIndex', employeeIdColumnIndex.toString());
-                
-                importStatus.textContent = `成功导入${data.length}行数据`;
-                importStatus.className = "import-status success";
-                progress.style.width = "100%";
-                
-                setTimeout(() => {
-                    progressBar.classList.add('hidden');
-                    importStatus.classList.add('hidden');
-                }, 2000);
-                
-                dataCountElement.textContent = excelData.length - 1; // 减去表头行
-                
-                alert(`成功导入${data.length}行数据，已识别工号列: ${headers[employeeIdColumnIndex]}`);
-            }
-            
-            // 生成示例数据
-            generateDataBtn.addEventListener('click', function() {
-                initSampleData();
+            // 取消登录按钮点击事件
+            cancelLoginBtn.addEventListener('click', function() {
+                loginModal.classList.add('hidden');
             });
             
-            // 搜索员工函数
-            function searchEmployee(id) {
-                if (excelData.length === 0) {
-                    alert('请先导入Excel数据');
+            // 登录按钮点击事件
+            loginBtn.addEventListener('click', function() {
+                const adminId = document.getElementById('admin-id').value.trim();
+                const password = document.getElementById('admin-password').value;
+                
+                if (!adminId || !password) {
+                    showNotification('请输入管理员工号和密码', 'error');
                     return;
                 }
                 
-                // 查找工号所在的行
-                let targetRowIndex = -1;
-                for (let i = 1; i < excelData.length; i++) {
-                    // 获取工号列的值
-                    const employeeId = String(excelData[i][employeeIdColumnIndex] || '');
-                    
-                    // 标准化工号格式进行比较
-                    if (employeeId.toUpperCase() === id.toUpperCase()) {
-                        targetRowIndex = i;
-                        break;
-                    }
+                // 验证管理员账号
+                const validAdmin = adminAccounts.find(account => 
+                    account.id === adminId && account.password === password
+                );
+                
+                if (validAdmin) {
+                    // 登录成功
+                    loginModal.classList.add('hidden');
+                    adminTab.classList.remove('hidden');
+                    switchTab('admin');
+                    showNotification('管理员登录成功', 'success');
+                } else {
+                    showNotification('管理员工号或密码错误', 'error');
+                }
+            });
+            
+            // 退出管理员按钮点击事件
+            logoutBtn.addEventListener('click', function() {
+                adminTab.classList.add('hidden');
+                switchTab('query');
+                showNotification('已退出管理员模式', 'success');
+            });
+            
+            // 添加员工按钮点击事件
+            addEmployeeBtn.addEventListener('click', function() {
+                isEditMode = false;
+                editEmployeeId = null;
+                resetEmployeeForm();
+                employeeForm.classList.remove('hidden');
+            });
+            
+            // 取消表单按钮点击事件
+            cancelFormBtn.addEventListener('click', function() {
+                employeeForm.classList.add('hidden');
+            });
+            
+            // 保存员工按钮点击事件
+            saveEmployeeBtn.addEventListener('click', function() {
+                saveEmployeeData();
+            });
+            
+            // 数字输入框自动计算总工资
+            salaryFields.forEach(field => {
+                const input = document.getElementById(field.id);
+                if (input) {
+                    input.addEventListener('input', calculateTotalSalary);
+                }
+            });
+            
+            // 验证工号格式
+            function isValidEmployeeId(id) {
+                const pattern = /^L\d{5}$/;
+                return pattern.test(id);
+            }
+            
+            // 从本地存储加载数据
+            function loadFromLocalStorage() {
+                const storedData = localStorage.getItem('salaryData');
+                
+                if (storedData) {
+                    salaryData = JSON.parse(storedData);
+                    dataCountElement.textContent = salaryData.length;
+                    adminDataCountElement.textContent = salaryData.length;
+                    updateAdminTable();
+                }
+            }
+            
+            // 搜索员工函数
+            function searchEmployee(id) {
+                if (salaryData.length === 0) {
+                    alert('系统中暂无工资数据');
+                    return;
                 }
                 
-                if (targetRowIndex === -1) {
+                const employee = salaryData.find(emp => emp.id === id);
+                
+                if (!employee) {
                     alert('未找到该工号对应的员工信息');
                     return;
                 }
                 
                 // 显示员工信息
-                const employeeData = excelData[targetRowIndex];
-                const nameColumnIndex = employeeIdColumnIndex + 1 < headers.length ? employeeIdColumnIndex + 1 : employeeIdColumnIndex;
-                document.getElementById('employee-name').textContent = employeeData[nameColumnIndex] || '未知';
-                document.getElementById('employee-id-text').textContent = employeeData[employeeIdColumnIndex] || '未知';
+                document.getElementById('employee-name').textContent = employee.name;
+                document.getElementById('employee-id-text').textContent = employee.id;
                 
-                // 显示表格数据（工号所在行及上一行）
-                displayTableData(targetRowIndex);
+                // 显示工资明细
+                displaySalaryDetails(employee);
                 
                 // 显示结果卡片，隐藏无数据提示
                 noData.classList.add('hidden');
                 resultCard.classList.remove('hidden');
             }
             
-            // 显示表格数据
-            function displayTableData(targetRowIndex) {
-                // 清空表格
+            // 显示工资明细
+            function displaySalaryDetails(employee) {
                 tableBody.innerHTML = '';
-                tableHeader.innerHTML = '';
                 
-                // 更新表头
-                for (let i = 0; i < headers.length; i++) {
-                    const th = document.createElement('th');
-                    th.textContent = headers[i];
-                    tableHeader.appendChild(th);
-                }
+                // 添加工资明细行
+                const details = [
+                    { name: '基本工资', value: employee.baseSalary },
+                    { name: '绩效工资', value: employee.performance },
+                    { name: '津贴', value: employee.allowance },
+                    { name: '奖金', value: employee.bonus },
+                    { name: '扣款', value: employee.deduction },
+                    { name: '实发工资', value: employee.total, isTotal: true }
+                ];
                 
-                // 添加工号所在行的上一行（如果存在）
-                if (targetRowIndex > 1) {
-                    const prevRow = excelData[targetRowIndex - 1];
-                    const prevRowElement = createTableRow(prevRow, 'previous-row');
-                    tableBody.appendChild(prevRowElement);
-                }
-                
-                // 添加工号所在行
-                const targetRow = excelData[targetRowIndex];
-                const targetRowElement = createTableRow(targetRow, 'highlighted-row');
-                tableBody.appendChild(targetRowElement);
-            }
-            
-            // 创建表格行
-            function createTableRow(rowData, rowClass) {
-                const row = document.createElement('tr');
-                if (rowClass) {
-                    row.className = rowClass;
-                }
-                
-                for (let i = 0; i < headers.length; i++) {
-                    const cell = document.createElement('td');
-                    
-                    // 格式化数字
-                    if (typeof rowData[i] === 'number') {
-                        cell.textContent = formatNumber(rowData[i]);
-                    } else {
-                        cell.textContent = rowData[i] || '';
+                details.forEach(detail => {
+                    const row = document.createElement('tr');
+                    if (detail.isTotal) {
+                        row.classList.add('highlighted-row');
                     }
                     
-                    row.appendChild(cell);
+                    row.innerHTML = `
+                        <td>${detail.name}</td>
+                        <td>${formatNumber(detail.value)}</td>
+                    `;
+                    
+                    tableBody.appendChild(row);
+                });
+            }
+            
+            // 更新管理员表格
+            function updateAdminTable() {
+                adminTableBody.innerHTML = '';
+                
+                const startIndex = (currentPage - 1) * rowsPerPage;
+                const endIndex = Math.min(startIndex + rowsPerPage, salaryData.length);
+                
+                for (let i = startIndex; i < endIndex; i++) {
+                    const employee = salaryData[i];
+                    const row = document.createElement('tr');
+                    
+                    row.innerHTML = `
+                        <td>${employee.id}</td>
+                        <td>${employee.name}</td>
+                        <td>${formatNumber(employee.baseSalary)}</td>
+                        <td>${formatNumber(employee.performance)}</td>
+                        <td>${formatNumber(employee.allowance)}</td>
+                        <td>${formatNumber(employee.bonus)}</td>
+                        <td>${formatNumber(employee.deduction)}</td>
+                        <td>${formatNumber(employee.total)}</td>
+                        <td>
+                            <button class="btn-admin edit-btn" data-id="${employee.id}">编辑</button>
+                            <button class="btn-danger delete-btn" data-id="${employee.id}">删除</button>
+                        </td>
+                    `;
+                    
+                    adminTableBody.appendChild(row);
                 }
                 
-                return row;
+                // 更新分页信息
+                document.getElementById('admin-page-info').textContent = 
+                    `第 ${currentPage} 页 / 共 ${Math.ceil(salaryData.length / rowsPerPage)} 页`;
+                
+                // 添加编辑和删除按钮事件监听
+                document.querySelectorAll('.edit-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        editEmployee(this.dataset.id);
+                    });
+                });
+                
+                document.querySelectorAll('.delete-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        deleteEmployee(this.dataset.id);
+                    });
+                });
+            }
+            
+            // 编辑员工信息
+            function editEmployee(id) {
+                const employee = salaryData.find(emp => emp.id === id);
+                
+                if (employee) {
+                    isEditMode = true;
+                    editEmployeeId = id;
+                    
+                    // 填充表单
+                    document.getElementById('admin-employee-id').value = employee.id;
+                    document.getElementById('admin-employee-id').disabled = true;
+                    document.getElementById('admin-employee-name').value = employee.name;
+                    document.getElementById('admin-base-salary').value = employee.baseSalary;
+                    document.getElementById('admin-performance').value = employee.performance;
+                    document.getElementById('admin-allowance').value = employee.allowance;
+                    document.getElementById('admin-bonus').value = employee.bonus;
+                    document.getElementById('admin-deduction').value = employee.deduction;
+                    document.getElementById('admin-total').value = employee.total;
+                    
+                    employeeForm.classList.remove('hidden');
+                }
+            }
+            
+            // 删除员工信息
+            function deleteEmployee(id) {
+                if (confirm('确定要删除这条员工工资记录吗？此操作不可恢复。')) {
+                    salaryData = salaryData.filter(emp => emp.id !== id);
+                    saveToLocalStorage();
+                    updateAdminTable();
+                    showNotification('员工记录已删除', 'success');
+                }
+            }
+            
+            // 保存员工数据
+            function saveEmployeeData() {
+                const id = document.getElementById('admin-employee-id').value.trim();
+                const name = document.getElementById('admin-employee-name').value.trim();
+                const baseSalary = parseFloat(document.getElementById('admin-base-salary').value) || 0;
+                const performance = parseFloat(document.getElementById('admin-performance').value) || 0;
+                const allowance = parseFloat(document.getElementById('admin-allowance').value) || 0;
+                const bonus = parseFloat(document.getElementById('admin-bonus').value) || 0;
+                const deduction = parseFloat(document.getElementById('admin-deduction').value) || 0;
+                const total = parseFloat(document.getElementById('admin-total').value) || 0;
+                
+                // 验证输入
+                if (!id || !name) {
+                    showNotification('请填写工号和姓名', 'error');
+                    return;
+                }
+                
+                if (!isValidEmployeeId(id)) {
+                    showNotification('工号格式不正确！请使用大写字母L开头加5位数字的格式', 'error');
+                    return;
+                }
+                
+                // 检查工号是否已存在（添加模式时）
+                if (!isEditMode && salaryData.some(emp => emp.id === id)) {
+                    showNotification('该工号已存在，请使用不同的工号', 'error');
+                    return;
+                }
+                
+                // 创建或更新员工记录
+                const employee = {
+                    id,
+                    name,
+                    baseSalary,
+                    performance,
+                    allowance,
+                    bonus,
+                    deduction,
+                    total
+                };
+                
+                if (isEditMode) {
+                    // 更新现有记录
+                    const index = salaryData.findIndex(emp => emp.id === editEmployeeId);
+                    if (index !== -1) {
+                        salaryData[index] = employee;
+                    }
+                } else {
+                    // 添加新记录
+                    salaryData.push(employee);
+                }
+                
+                // 保存到本地存储
+                saveToLocalStorage();
+                
+                // 更新界面
+                updateAdminTable();
+                employeeForm.classList.add('hidden');
+                resetEmployeeForm();
+                
+                showNotification(`员工记录已${isEditMode ? '更新' : '添加'}`, 'success');
+            }
+            
+            // 计算总工资
+            function calculateTotalSalary() {
+                let total = 0;
+                
+                salaryFields.forEach(field => {
+                    if (field.id !== 'admin-deduction') {
+                        total += parseFloat(document.getElementById(field.id).value) || 0;
+                    } else {
+                        total -= parseFloat(document.getElementById(field.id).value) || 0;
+                    }
+                });
+                
+                document.getElementById('admin-total').value = total;
+            }
+            
+            // 重置员工表单
+            function resetEmployeeForm() {
+                document.getElementById('admin-employee-id').value = '';
+                document.getElementById('admin-employee-id').disabled = false;
+                document.getElementById('admin-employee-name').value = '';
+                
+                salaryFields.forEach(field => {
+                    document.getElementById(field.id).value = '';
+                });
+                
+                document.getElementById('admin-total').value = '';
+            }
+            
+            // 保存到本地存储
+            function saveToLocalStorage() {
+                localStorage.setItem('salaryData', JSON.stringify(salaryData));
+                dataCountElement.textContent = salaryData.length;
+                adminDataCountElement.textContent = salaryData.length;
             }
             
             // 数字格式化函数
             function formatNumber(num) {
-                if (typeof num !== 'number') return num || '';
-                return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                if (typeof num !== 'number') return '0';
+                return num.toLocaleString('zh-CN');
             }
             
-            // 拖放功能
-            const fileUploadLabel = document.querySelector('.file-upload-label');
+            // 显示通知
+            function showNotification(message, type) {
+                // 在实际应用中可以实现一个更完整的通知系统
+                alert(message);
+            }
             
-            fileUploadLabel.addEventListener('dragover', function(e) {
-                e.preventDefault();
-                this.style.background = '#dfe6e9';
-                this.style.borderColor = '#3498db';
-            });
-            
-            fileUploadLabel.addEventListener('dragleave', function() {
-                this.style.background = '#ecf0f1';
-                this.style.borderColor = '#bdc3c7';
-            });
-            
-            fileUploadLabel.addEventListener('drop', function(e) {
-                e.preventDefault();
-                this.style.background = '#ecf0f1';
-                this.style.borderColor = '#bdc3c7';
+            // 切换标签
+            function switchTab(tabName) {
+                tabs.forEach(tab => {
+                    if (tab.dataset.tab === tabName) {
+                        tab.classList.add('active');
+                    } else {
+                        tab.classList.remove('active');
+                    }
+                });
                 
-                if (e.dataTransfer.files.length) {
-                    fileUploadInput.files = e.dataTransfer.files;
-                    const event = new Event('change');
-                    fileUploadInput.dispatchEvent(event);
+                tabContents.forEach(content => {
+                    if (content.id === `${tabName}-tab`) {
+                        content.classList.add('active');
+                    } else {
+                        content.classList.remove('active');
+                    }
+                });
+            }
+            
+            // 分页按钮事件
+            document.getElementById('admin-prev-page').addEventListener('click', function() {
+                if (currentPage > 1) {
+                    currentPage--;
+                    updateAdminTable();
                 }
             });
             
-            // 初始化
-            loadFromLocalStorage();
+            document.getElementById('admin-next-page').addEventListener('click', function() {
+                const totalPages = Math.ceil(salaryData.length / rowsPerPage);
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    updateAdminTable();
+                }
+            });
         });
     </script>
 </body>
